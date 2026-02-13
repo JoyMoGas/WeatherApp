@@ -43,10 +43,66 @@ export async function getWeatherByCity(cityName) {
   }
 }
 
-// Ejemplo de uso (comentado):
+export async function getForecastByCity(cityName) {
+  try {
+    if (!cityName || cityName.trim() === "") {
+      console.error("Error: Debes proporcionar el nombre de una ciudad");
+      return null;
+    }
+
+    if (!API_KEY || !API_URL) {
+      console.error("Error: Faltan las variables de entorno API_KEY o API_URL");
+      return null;
+    }
+
+    const forecastUrl = API_URL.replace("/weather", "/forecast");
+    const url = `${forecastUrl}?q=${encodeURIComponent(cityName)}&appid=${API_KEY}&units=metric&lang=es`;
+
+    console.log(`Solicitando pronóstico del clima para: ${cityName}`);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.error(`Ciudad "${cityName}" no encontrada`);
+      } else if (response.status === 401) {
+        console.error("Error de autenticación: API_KEY inválida");
+      } else {
+        console.error(
+          `Error HTTP: ${response.status} - ${response.statusText}`,
+        );
+      }
+      return null;
+    }
+
+    const data = await response.json();
+
+    console.log("Datos del pronóstico obtenidos exitosamente:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Error al obtener pronóstico del clima:", error.message);
+    return null;
+  }
+}
+
+getWeatherByCity("Hermosillo").then((data) => {
+  if (data) {
+    console.log(data);
+  }
+});
+
+// Ejemplo de uso:
 // getWeatherByCity('Madrid').then(data => {
 //   if (data) {
 //     console.log('Temperatura:', data.main.temp);
 //     console.log('Descripción:', data.weather[0].description);
+//   }
+// });
+
+// getForecastByCity('Madrid').then(data => {
+//   if (data) {
+//     console.log('Pronóstico de 5 días:', data.list);
+//     // data.list contiene 40 puntos de datos (cada 3 horas durante 5 días)
 //   }
 // });
