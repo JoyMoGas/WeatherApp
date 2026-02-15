@@ -172,7 +172,7 @@
           </div>
           <div>
             <i
-              class="fa-solid fa-temperature-arrow-up"
+              class="fa-solid fa-temperature-high text-3xl"
               style="color: rgba(255, 255, 255, 1)"
             ></i>
           </div>
@@ -185,7 +185,12 @@
             <p class="text-sm font-medium opacity-90">Mínima</p>
             <h2 id="minT" class="text-2xl font-bold mt-1">-- °C</h2>
           </div>
-          <div></div>
+          <div>
+            <i
+              class="fa-solid fa-temperature-low text-3xl"
+              style="color: rgba(255, 255, 255, 1)"
+            ></i>
+          </div>
         </article>
 
         <article
@@ -225,7 +230,7 @@
         >
           <h2 class="text-lg font-semibold mb-4">Pronóstico de 5 días</h2>
 
-          <div class="space-y-3">
+          <div id="forecastContainer" class="space-y-3">
             <div class="flex items-center justify-between py-2">
               <div class="flex items-center gap-3 flex-1">
                 <i
