@@ -86,11 +86,6 @@ export async function getForecastByCity(cityName) {
   }
 }
 
-getWeatherByCity("Hermosillo").then((data) => {
-  if (data) {
-    console.log(data);
-  }
-});
 
 // Ejemplo de uso:
 // getWeatherByCity('Madrid').then(data => {
