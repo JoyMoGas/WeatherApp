@@ -5,11 +5,9 @@ export async function loadWeatherAdvice() {
   if (weatherAdviceData) return weatherAdviceData;
 
   try {
-    const response = await fetch("/data/weatherAdvice.json");
-    if (!response.ok) {
-      throw new Error(`Error al cargar consejos: ${response.status}`);
-    }
-    weatherAdviceData = await response.json();
+    // Usar import dinámico para que Vite lo incluya en el bundle de producción
+    const module = await import("../data/weatherAdvice.json");
+    weatherAdviceData = module.default || module;
     console.log("Consejos meteorológicos cargados:", weatherAdviceData);
     return weatherAdviceData;
   } catch (error) {
