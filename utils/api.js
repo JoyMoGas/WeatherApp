@@ -1,6 +1,66 @@
 const API_KEY = import.meta.env.VITE_API_KEY;
 const API_URL = import.meta.env.VITE_API_URL;
 
+async function retryWithBackoff(fn, maxRetries = 3, delay = 1000) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+
+      if (attempt < maxRetries) {
+        const waitTime = delay * Math.pow(2, attempt);
+        console.log(
+          `Intento ${attempt + 1} falló. Reintentando en ${waitTime}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+class CircuitBreaker {
+  constructor(threshold, timeout) {
+    this.threshold = threshold;
+    this.timeout = timeout;
+    this.failures = 0;
+    this.state = "CLOSED";
+  }
+
+  async execute(request) {
+    if (this.isStateOpen()) {
+      throw new Error("Circuit is open, service is unavailable");
+    }
+
+    try {
+      const response = await request();
+      this.state = "CLOSED";
+      this.failures = 0;
+      return response;
+    } catch (err) {
+      this.failures++;
+      if (this.failures >= this.threshold) {
+        this.state = "OPEN";
+        setTimeout(() => {
+          this.state = "HALF-OPEN";
+        }, this.timeout);
+      }
+      throw err;
+    }
+  }
+
+  isStateOpen() {
+    return this.state === "OPEN";
+  }
+}
+
+
+const weatherCircuitBreaker = new CircuitBreaker(3, 5000);
+
 export async function getWeatherByCity(cityName) {
   try {
     if (!cityName || cityName.trim() === "") {
@@ -17,20 +77,30 @@ export async function getWeatherByCity(cityName) {
 
     console.log(`Solicitando datos del clima para: ${cityName}`);
 
-    const response = await fetch(url);
+    const response = await weatherCircuitBreaker.execute(async () => {
+      return await retryWithBackoff(async () => {
+        const res = await fetch(url);
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.error(`Ciudad "${cityName}" no encontrada`);
-      } else if (response.status === 401) {
-        console.error("Error de autenticación: API_KEY inválida");
-      } else {
-        console.error(
-          `Error HTTP: ${response.status} - ${response.statusText}`,
-        );
-      }
-      return null;
-    }
+        if (!res.ok && res.status >= 400 && res.status < 500) {
+          if (res.status === 404) {
+            console.error(`Ciudad "${cityName}" no encontrada`);
+          } else if (res.status === 401) {
+            console.error("Error de autenticación: API_KEY inválida");
+          } else {
+            console.error(`Error HTTP: ${res.status} - ${res.statusText}`);
+          }
+          return null;
+        }
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        return res;
+      });
+    });
+
+    if (!response) return null;
 
     const data = await response.json();
 
@@ -60,20 +130,30 @@ export async function getForecastByCity(cityName) {
 
     console.log(`Solicitando pronóstico del clima para: ${cityName}`);
 
-    const response = await fetch(url);
+    // Wrap fetch in retry logic
+    const response = await retryWithBackoff(async () => {
+      const res = await fetch(url);
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.error(`Ciudad "${cityName}" no encontrada`);
-      } else if (response.status === 401) {
-        console.error("Error de autenticación: API_KEY inválida");
-      } else {
-        console.error(
-          `Error HTTP: ${response.status} - ${response.statusText}`,
-        );
+      // Don't retry on client errors (4xx), only on server errors (5xx) or network issues
+      if (!res.ok && res.status >= 400 && res.status < 500) {
+        if (res.status === 404) {
+          console.error(`Ciudad "${cityName}" no encontrada`);
+        } else if (res.status === 401) {
+          console.error("Error de autenticación: API_KEY inválida");
+        } else {
+          console.error(`Error HTTP: ${res.status} - ${res.statusText}`);
+        }
+        return null;
       }
-      return null;
-    }
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      return res;
+    });
+
+    if (!response) return null;
 
     const data = await response.json();
 
@@ -85,7 +165,6 @@ export async function getForecastByCity(cityName) {
     return null;
   }
 }
-
 
 // Ejemplo de uso:
 // getWeatherByCity('Madrid').then(data => {

@@ -1,4 +1,5 @@
 import { getWeatherByCity, getForecastByCity } from "./api.js";
+import { loadWeatherAdvice, updateAdviceModal } from "./adviceLoader.js";
 
 const inputElement = document.getElementById("citySearch");
 
@@ -108,8 +109,10 @@ function processForecastData(forecastData) {
 }
 
 function updateForecastUI(forecastData) {
-  const forecastContainer = document.getElementById("forecastContainer");
-  if (!forecastContainer) return;
+  const forecastContainerDesktop = document.getElementById("forecastContainer");
+  const forecastContainerMobile = document.getElementById(
+    "forecastContainerMobile",
+  );
 
   const forecast = processForecastData(forecastData);
 
@@ -118,7 +121,7 @@ function updateForecastUI(forecastData) {
     return;
   }
 
-  forecastContainer.innerHTML = forecast
+  const forecastHTML = forecast
     .map(
       (day) => `
     <div class="flex items-center justify-between py-2">
@@ -144,6 +147,14 @@ function updateForecastUI(forecastData) {
     )
     .join("");
 
+  // Actualizar ambos contenedores (desktop y mobile)
+  if (forecastContainerDesktop) {
+    forecastContainerDesktop.innerHTML = forecastHTML;
+  }
+  if (forecastContainerMobile) {
+    forecastContainerMobile.innerHTML = forecastHTML;
+  }
+
   console.log("Pronóstico de 5 días actualizado");
 }
 
@@ -153,6 +164,11 @@ function updateWeatherUI(weatherData) {
   const locationElement = document.querySelector(".fa-location-dot + span");
   if (locationElement) {
     locationElement.textContent = `${weatherData.name}, ${weatherData.sys.country}`;
+  }
+
+  const locationAdviceElement = document.querySelector(".locationAd");
+  if (locationAdviceElement) {
+    locationAdviceElement.textContent = `${weatherData.name}, ${weatherData.sys.country}`;
   }
 
   const descriptionElement = document.querySelector(".fa-cloud-sun + span");
@@ -169,15 +185,22 @@ function updateWeatherUI(weatherData) {
     tempElement.innerHTML = `${Math.round(weatherData.main.temp)} <span class="font-medium">°C</span>`;
   }
 
+  const tempAdviceElement = document.querySelector(".tempAdvice");
+
+  if (tempAdviceElement) {
+    const description = weatherData.weather[0].description
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    tempAdviceElement.textContent = `${description} - ${Math.round(weatherData.main.temp)}°C`;
+  }
+
   const windElement = document.getElementById("windS").querySelector("p");
   if (windElement) {
     windElement.textContent = `Viento ${Math.round(weatherData.wind.speed)} km/h`;
   }
 
-  const humidityElement = document
-    .querySelector(".fa-droplet")
-    .closest("article")
-    .querySelector("h2");
+  const humidityElement = document.getElementById("humidityValue");
   if (humidityElement) {
     humidityElement.textContent = `${weatherData.main.humidity}%`;
   }
@@ -203,6 +226,9 @@ function updateWeatherUI(weatherData) {
   }
 
   console.log("UI actualizada con datos del clima");
+
+  // Actualizar el modal de consejos
+  updateAdviceModal(weatherData);
 }
 
 async function getWeatherByCoords(lat, lon) {
@@ -316,4 +342,8 @@ async function loadWeatherByLocation() {
   }
 }
 
+// Cargar consejos meteorológicos
+loadWeatherAdvice();
+
+// Cargar clima inicial
 loadWeatherByLocation();

@@ -1,0 +1,349 @@
+{
+  "weatherAdvice": {
+    "clear": {
+      "conditions": ["cielo claro", "despejado", "clear sky"],
+      "advice": [
+        {
+          "title": "Protección Solar",
+          "icon": "fa-sun",
+          "description": "Usa protector solar SPF 30+ y reaplica cada 2 horas",
+          "priority": "high"
+        },
+        {
+          "title": "Hidratación",
+          "icon": "fa-droplet",
+          "description": "Bebe agua constantemente, especialmente si estás al aire libre",
+          "priority": "high"
+        },
+        {
+          "title": "Vestimenta",
+          "icon": "fa-shirt",
+          "description": "Ropa ligera y de colores claros. Usa sombrero y gafas de sol",
+          "priority": "medium"
+        },
+        {
+          "title": "Actividades",
+          "icon": "fa-person-running",
+          "description": "Excelente día para actividades al aire libre. Evita el sol directo entre 11am-3pm",
+          "priority": "low"
+        }
+      ]
+    },
+    "clouds": {
+      "conditions": [
+        "nubes",
+        "nuboso",
+        "nubes dispersas",
+        "algo de nubes",
+        "muy nuboso",
+        "nublado",
+        "clouds",
+        "few clouds",
+        "scattered clouds",
+        "broken clouds",
+        "overcast clouds"
+      ],
+      "advice": [
+        {
+          "title": "Protección Moderada",
+          "icon": "fa-cloud-sun",
+          "description": "Aunque esté nublado, los rayos UV pueden atravesar las nubes",
+          "priority": "medium"
+        },
+        {
+          "title": "Vestimenta",
+          "icon": "fa-shirt",
+          "description": "Lleva una chaqueta ligera por si refresca",
+          "priority": "medium"
+        },
+        {
+          "title": "Actividades",
+          "icon": "fa-person-walking",
+          "description": "Buen día para caminar o hacer ejercicio al aire libre",
+          "priority": "low"
+        },
+        {
+          "title": "Precaución",
+          "icon": "fa-umbrella",
+          "description": "Considera llevar un paraguas, podría llover",
+          "priority": "low"
+        }
+      ]
+    },
+    "rain": {
+      "conditions": [
+        "lluvia",
+        "llovizna",
+        "lluvia ligera",
+        "lluvia moderada",
+        "lluvia intensa",
+        "rain",
+        "light rain",
+        "moderate rain",
+        "heavy rain",
+        "drizzle",
+        "shower rain"
+      ],
+      "advice": [
+        {
+          "title": "Paraguas Esencial",
+          "icon": "fa-umbrella",
+          "description": "No olvides tu paraguas o impermeable antes de salir",
+          "priority": "high"
+        },
+        {
+          "title": "Calzado Adecuado",
+          "icon": "fa-boot",
+          "description": "Usa zapatos impermeables o botas para evitar mojarte los pies",
+          "priority": "high"
+        },
+        {
+          "title": "Conducción",
+          "icon": "fa-car",
+          "description": "Maneja con precaución, reduce la velocidad y aumenta la distancia",
+          "priority": "high"
+        },
+        {
+          "title": "Actividades",
+          "icon": "fa-house",
+          "description": "Considera actividades bajo techo. Si sales, busca refugio si la lluvia se intensifica",
+          "priority": "medium"
+        }
+      ]
+    },
+    "thunderstorm": {
+      "conditions": [
+        "tormenta",
+        "tormenta eléctrica",
+        "truenos",
+        "thunderstorm",
+        "storm"
+      ],
+      "advice": [
+        {
+          "title": "¡Alerta de Seguridad!",
+          "icon": "fa-triangle-exclamation",
+          "description": "Evita salir si es posible. Busca refugio en un lugar seguro",
+          "priority": "high"
+        },
+        {
+          "title": "Evita Espacios Abiertos",
+          "icon": "fa-tree",
+          "description": "No te refugies bajo árboles. Aléjate de objetos metálicos",
+          "priority": "high"
+        },
+        {
+          "title": "Desconecta Aparatos",
+          "icon": "fa-plug",
+          "description": "Desconecta aparatos electrónicos para evitar daños por rayos",
+          "priority": "medium"
+        },
+        {
+          "title": "Conducción",
+          "icon": "fa-car",
+          "description": "Si conduces, detente en un lugar seguro hasta que pase la tormenta",
+          "priority": "high"
+        }
+      ]
+    },
+    "snow": {
+      "conditions": [
+        "nieve",
+        "nevada",
+        "nieve ligera",
+        "nieve intensa",
+        "snow",
+        "light snow",
+        "heavy snow"
+      ],
+      "advice": [
+        {
+          "title": "Abrígate Bien",
+          "icon": "fa-snowflake",
+          "description": "Usa varias capas de ropa, guantes, bufanda y gorro",
+          "priority": "high"
+        },
+        {
+          "title": "Calzado Antideslizante",
+          "icon": "fa-boot",
+          "description": "Usa botas con buena tracción para evitar resbalones",
+          "priority": "high"
+        },
+        {
+          "title": "Conducción Extrema",
+          "icon": "fa-car",
+          "description": "Maneja muy despacio, usa cadenas si es necesario. Evita viajes no esenciales",
+          "priority": "high"
+        },
+        {
+          "title": "Precaución en Casa",
+          "icon": "fa-house",
+          "description": "Mantén la calefacción encendida y ten provisiones básicas",
+          "priority": "medium"
+        }
+      ]
+    },
+    "mist": {
+      "conditions": [
+        "niebla",
+        "neblina",
+        "bruma",
+        "calima",
+        "mist",
+        "fog",
+        "haze",
+        "smoke"
+      ],
+      "advice": [
+        {
+          "title": "Visibilidad Reducida",
+          "icon": "fa-eye-slash",
+          "description": "Ten precaución al caminar o conducir, la visibilidad es limitada",
+          "priority": "high"
+        },
+        {
+          "title": "Conducción",
+          "icon": "fa-car",
+          "description": "Usa luces antiniebla, reduce velocidad y mantén distancia de seguridad",
+          "priority": "high"
+        },
+        {
+          "title": "Vestimenta",
+          "icon": "fa-shirt",
+          "description": "Lleva una chaqueta, la humedad puede hacer que sientas más frío",
+          "priority": "medium"
+        },
+        {
+          "title": "Actividades",
+          "icon": "fa-person-walking",
+          "description": "Evita ejercicio intenso al aire libre si hay calima o humo",
+          "priority": "medium"
+        }
+      ]
+    },
+    "extreme": {
+      "conditions": [
+        "tornado",
+        "huracán",
+        "ventisca",
+        "tormenta de arena",
+        "ceniza volcánica",
+        "tornado",
+        "hurricane",
+        "squall"
+      ],
+      "advice": [
+        {
+          "title": "EMERGENCIA",
+          "icon": "fa-circle-exclamation",
+          "description": "Sigue las instrucciones de las autoridades locales inmediatamente",
+          "priority": "high"
+        },
+        {
+          "title": "Refugio Seguro",
+          "icon": "fa-house-chimney",
+          "description": "Busca refugio en un lugar seguro y resistente. NO salgas",
+          "priority": "high"
+        },
+        {
+          "title": "Provisiones",
+          "icon": "fa-box",
+          "description": "Ten agua, alimentos no perecederos, linterna y radio a mano",
+          "priority": "high"
+        },
+        {
+          "title": "Comunicación",
+          "icon": "fa-phone",
+          "description": "Mantén tu teléfono cargado y en contacto con familiares",
+          "priority": "high"
+        }
+      ]
+    },
+    "hot": {
+      "conditions": ["calor extremo", "ola de calor"],
+      "tempRange": { "min": 35, "max": 100 },
+      "advice": [
+        {
+          "title": "Calor Extremo",
+          "icon": "fa-temperature-high",
+          "description": "Evita la exposición prolongada al sol. Busca lugares con aire acondicionado",
+          "priority": "high"
+        },
+        {
+          "title": "Hidratación Crítica",
+          "icon": "fa-droplet",
+          "description": "Bebe agua cada 15-20 minutos, incluso si no tienes sed",
+          "priority": "high"
+        },
+        {
+          "title": "Protección Solar Máxima",
+          "icon": "fa-sun",
+          "description": "Usa protector solar SPF 50+, ropa ligera y de manga larga",
+          "priority": "high"
+        },
+        {
+          "title": "Grupos Vulnerables",
+          "icon": "fa-heart-pulse",
+          "description": "Especial cuidado con niños, ancianos y mascotas",
+          "priority": "high"
+        }
+      ]
+    },
+    "cold": {
+      "conditions": ["frío extremo", "ola de frío"],
+      "tempRange": { "min": -100, "max": 0 },
+      "advice": [
+        {
+          "title": "Frío Extremo",
+          "icon": "fa-temperature-low",
+          "description": "Limita el tiempo al aire libre. Riesgo de hipotermia",
+          "priority": "high"
+        },
+        {
+          "title": "Vestimenta en Capas",
+          "icon": "fa-vest",
+          "description": "Usa múltiples capas, cubre cabeza, manos y pies completamente",
+          "priority": "high"
+        },
+        {
+          "title": "Calefacción",
+          "icon": "fa-fire",
+          "description": "Mantén tu hogar caliente, pero ventila ocasionalmente",
+          "priority": "high"
+        },
+        {
+          "title": "Precaución",
+          "icon": "fa-triangle-exclamation",
+          "description": "Cuidado con superficies heladas. Evita viajes no esenciales",
+          "priority": "high"
+        }
+      ]
+    }
+  },
+  "generalAdvice": {
+    "morning": [
+      {
+        "title": "Buenos Días",
+        "icon": "fa-mug-hot",
+        "description": "Revisa el pronóstico antes de salir y planifica tu día",
+        "priority": "low"
+      }
+    ],
+    "afternoon": [
+      {
+        "title": "Tarde",
+        "icon": "fa-cloud-sun",
+        "description": "Las temperaturas suelen ser más altas entre 2pm-4pm",
+        "priority": "low"
+      }
+    ],
+    "evening": [
+      {
+        "title": "Noche",
+        "icon": "fa-moon",
+        "description": "Las temperaturas bajan por la noche, lleva algo de abrigo",
+        "priority": "low"
+      }
+    ]
+  }
+}
