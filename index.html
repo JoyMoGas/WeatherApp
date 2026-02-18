@@ -19,6 +19,11 @@
       />
 
       <div
+        id="notificationContainer"
+        class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 w-full max-w-md px-4 pointer-events-none"
+      ></div>
+
+      <div
         class="rounded-2xl relative z-20 px-5 py-3 text-white flex flex-row justify-between items-center gap-3 bg-white/20 backdrop-blur-md border border-white/30 shadow-xl mx-4 my-5 lg:mx-auto lg:max-w-7xl lg:px-8"
       >
         <div class="flex items-center gap-3 flex-1">
@@ -29,6 +34,7 @@
             type="text"
             value=""
             placeholder="Buscar ciudad..."
+            autocomplete="off"
           />
           <button
             id="clearSearch"
@@ -40,16 +46,17 @@
           >
             <i class="fa-solid fa-xmark text-xl"></i>
           </button>
+
+          <ul
+            id="searchSuggestions"
+            class="hidden absolute top-full left-0 right-0 mt-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto"
+          ></ul>
         </div>
       </div>
 
-      <!-- Main Content Container -->
       <div class="px-4 lg:px-8 lg:max-w-7xl lg:mx-auto">
-        <!-- Desktop: Two Column Layout | Mobile: Single Column -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-          <!-- Left Column: Main Weather Card + Forecast (Desktop: 2/3 width) -->
           <div class="lg:col-span-2 space-y-4 lg:space-y-6">
-            <!-- Main Weather Card -->
             <article
               class="bg-[#1d79d1] rounded-2xl relative z-10 text-white flex flex-row"
             >
@@ -84,18 +91,40 @@
 
               <div
                 id="windS"
-                class="flex flex-col p-5 lg:p-8 pl-0 justify-end items-center flex-1"
+                class="flex flex-col p-5 lg:p-8 pl-0 justify-center items-center flex-1"
               >
-                <div class="flex items-center justify-center flex-row gap-1">
-                  <i
-                    class="fa-solid fa-wind text-sm lg:text-base"
-                    style="color: rgba(255, 255, 255, 1)"
-                  ></i>
-                  <p class="font-medium text-sm lg:text-base">Cargando...</p>
+                <div
+                  class="flex flex-row gap-6 justify-center items-center w-full py-2 border-b border-white/20"
+                >
+                  <div class="flex flex-col items-center gap-1">
+                    <i class="fa-solid fa-sunrise text-2xl opacity-90"></i>
+                    <div class="text-center">
+                      <p class="text-xs opacity-75">Amanecer</p>
+                      <p id="sunriseTime" class="text-sm font-bold">--:--</p>
+                    </div>
+                  </div>
+                  <div class="w-px h-8 bg-white/30"></div>
+                  <div class="flex flex-col items-center gap-1">
+                    <i class="fa-solid fa-sunset text-2xl opacity-90"></i>
+                    <div class="text-center">
+                      <p class="text-xs opacity-75">Atardecer</p>
+                      <p id="sunsetTime" class="text-sm font-bold">--:--</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div
-                  class="cursor-pointer w-full bg-white rounded-full text-black py-1 lg:py-2 mt-1 px-3 lg:px-4 text-sm lg:text-base text-center align-middle whitespace-nowrap hover:bg-white/90 transition-colors duration-200"
+                  class="flex flex-col items-center justify-center gap-2 flex-1"
+                >
+                  <i
+                    class="fa-solid fa-wind text-3xl opacity-80"
+                    style="color: rgba(255, 255, 255, 1)"
+                  ></i>
+                  <p id="windSpeed" class="font-medium text-lg">-- km/h</p>
+                </div>
+
+                <div
+                  class="cursor-pointer w-full bg-white text-[#1d79d1] hover:bg-gray-100 font-semibold rounded-xl py-2 px-4 shadow-md transition-all duration-200 text-center text-sm"
                   id="openModal"
                 >
                   Ver Consejos
@@ -111,9 +140,7 @@
                   Pronóstico de 5 días
                 </h2>
 
-                <div id="forecastContainer" class="space-y-3">
-                  <!-- Se llenará dinámicamente con JavaScript -->
-                </div>
+                <div id="forecastContainer" class="space-y-3"></div>
               </article>
             </section>
           </div>

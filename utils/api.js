@@ -1,7 +1,12 @@
 const API_KEY = import.meta.env.VITE_API_KEY;
 const API_URL = import.meta.env.VITE_API_URL;
 
-async function retryWithBackoff(fn, maxRetries = 3, delay = 1000) {
+async function retryWithBackoff(
+  fn,
+  maxRetries = 3,
+  delay = 1000,
+  onRetry = null,
+) {
   let lastError;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -12,9 +17,9 @@ async function retryWithBackoff(fn, maxRetries = 3, delay = 1000) {
 
       if (attempt < maxRetries) {
         const waitTime = delay * Math.pow(2, attempt);
-        console.log(
-          `Intento ${attempt + 1} falló. Reintentando en ${waitTime}ms...`,
-        );
+        if (onRetry) {
+          onRetry(attempt + 1, maxRetries, waitTime);
+        }
         await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
     }
@@ -58,125 +63,100 @@ class CircuitBreaker {
   }
 }
 
-
 const weatherCircuitBreaker = new CircuitBreaker(3, 5000);
 
-export async function getWeatherByCity(cityName) {
+export async function getWeatherByCity(cityName, onStatusUpdate = null) {
   try {
     if (!cityName || cityName.trim() === "") {
-      console.error("Error: Debes proporcionar el nombre de una ciudad");
       return null;
     }
 
     if (!API_KEY || !API_URL) {
-      console.error("Error: Faltan las variables de entorno API_KEY o API_URL");
       return null;
     }
 
     const url = `${API_URL}?q=${encodeURIComponent(cityName)}&appid=${API_KEY}&units=metric&lang=es`;
 
-    console.log(`Solicitando datos del clima para: ${cityName}`);
-
     const response = await weatherCircuitBreaker.execute(async () => {
-      return await retryWithBackoff(async () => {
-        const res = await fetch(url);
+      return await retryWithBackoff(
+        async () => {
+          const res = await fetch(url);
 
-        if (!res.ok && res.status >= 400 && res.status < 500) {
-          if (res.status === 404) {
-            console.error(`Ciudad "${cityName}" no encontrada`);
-          } else if (res.status === 401) {
-            console.error("Error de autenticación: API_KEY inválida");
-          } else {
-            console.error(`Error HTTP: ${res.status} - ${res.statusText}`);
+          if (!res.ok && res.status >= 400 && res.status < 500) {
+            if (res.status === 404) {
+            }
+            return null;
           }
-          return null;
-        }
 
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+          }
 
-        return res;
-      });
+          return res;
+        },
+        3,
+        1000,
+        (attempt, max, wait) => {
+          if (onStatusUpdate) {
+            onStatusUpdate(`retry`, { attempt, max, wait });
+          }
+        },
+      );
     });
 
     if (!response) return null;
 
     const data = await response.json();
-
-    console.log("Datos del clima obtenidos exitosamente:", data);
-
+    if (onStatusUpdate) onStatusUpdate("success");
     return data;
   } catch (error) {
-    console.error("Error al obtener datos del clima:", error.message);
+    if (error.message.includes("Circuit is open")) {
+      if (onStatusUpdate) onStatusUpdate("circuit_open");
+    } else {
+      if (onStatusUpdate) onStatusUpdate("error", error.message);
+    }
     return null;
   }
 }
 
-export async function getForecastByCity(cityName) {
+export async function getForecastByCity(cityName, onStatusUpdate = null) {
   try {
     if (!cityName || cityName.trim() === "") {
-      console.error("Error: Debes proporcionar el nombre de una ciudad");
       return null;
     }
 
     if (!API_KEY || !API_URL) {
-      console.error("Error: Faltan las variables de entorno API_KEY o API_URL");
       return null;
     }
 
     const forecastUrl = API_URL.replace("/weather", "/forecast");
     const url = `${forecastUrl}?q=${encodeURIComponent(cityName)}&appid=${API_KEY}&units=metric&lang=es`;
 
-    console.log(`Solicitando pronóstico del clima para: ${cityName}`);
+    const response = await retryWithBackoff(
+      async () => {
+        const res = await fetch(url);
 
-    // Wrap fetch in retry logic
-    const response = await retryWithBackoff(async () => {
-      const res = await fetch(url);
-
-      // Don't retry on client errors (4xx), only on server errors (5xx) or network issues
-      if (!res.ok && res.status >= 400 && res.status < 500) {
-        if (res.status === 404) {
-          console.error(`Ciudad "${cityName}" no encontrada`);
-        } else if (res.status === 401) {
-          console.error("Error de autenticación: API_KEY inválida");
-        } else {
-          console.error(`Error HTTP: ${res.status} - ${res.statusText}`);
+        if (!res.ok && res.status >= 400 && res.status < 500) {
+          return null;
         }
-        return null;
-      }
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
 
-      return res;
-    });
+        return res;
+      },
+      3,
+      1000,
+      (attempt, max, wait) => {
+      },
+    );
 
     if (!response) return null;
 
     const data = await response.json();
-
-    console.log("Datos del pronóstico obtenidos exitosamente:", data);
-
     return data;
   } catch (error) {
-    console.error("Error al obtener pronóstico del clima:", error.message);
     return null;
   }
 }
-
-// Ejemplo de uso:
-// getWeatherByCity('Madrid').then(data => {
-//   if (data) {
-//     console.log('Temperatura:', data.main.temp);
-//     console.log('Descripción:', data.weather[0].description);
-//   }
-// });
-
-// getForecastByCity('Madrid').then(data => {
-//   if (data) {
-//     console.log('Pronóstico de 5 días:', data.list);
-//     // data.list contiene 40 puntos de datos (cada 3 horas durante 5 días)
-//   }
-// });

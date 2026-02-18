@@ -1,26 +1,20 @@
-// Cargar los consejos del archivo JSON
 let weatherAdviceData = null;
 
 export async function loadWeatherAdvice() {
   if (weatherAdviceData) return weatherAdviceData;
 
   try {
-    // Usar import dinámico para que Vite lo incluya en el bundle de producción
     const module = await import("../data/weatherAdvice.json");
     weatherAdviceData = module.default || module;
-    console.log("Consejos meteorológicos cargados:", weatherAdviceData);
     return weatherAdviceData;
   } catch (error) {
-    console.error("Error al cargar weatherAdvice.json:", error);
     return null;
   }
 }
 
-// Determinar la categoría de clima basada en la descripción
 function getWeatherCategory(weatherDescription, temperature) {
   const desc = weatherDescription.toLowerCase();
 
-  // Verificar temperatura extrema primero
   if (temperature >= 35) {
     return "hot";
   }
@@ -28,7 +22,6 @@ function getWeatherCategory(weatherDescription, temperature) {
     return "cold";
   }
 
-  // Verificar condiciones extremas
   if (
     desc.includes("tornado") ||
     desc.includes("huracán") ||
@@ -38,7 +31,6 @@ function getWeatherCategory(weatherDescription, temperature) {
     return "extreme";
   }
 
-  // Verificar tormenta
   if (
     desc.includes("tormenta") ||
     desc.includes("thunderstorm") ||
@@ -47,7 +39,6 @@ function getWeatherCategory(weatherDescription, temperature) {
     return "thunderstorm";
   }
 
-  // Verificar nieve
   if (
     desc.includes("nieve") ||
     desc.includes("snow") ||
@@ -56,7 +47,6 @@ function getWeatherCategory(weatherDescription, temperature) {
     return "snow";
   }
 
-  // Verificar lluvia
   if (
     desc.includes("lluvia") ||
     desc.includes("rain") ||
@@ -66,7 +56,6 @@ function getWeatherCategory(weatherDescription, temperature) {
     return "rain";
   }
 
-  // Verificar niebla/neblina
   if (
     desc.includes("niebla") ||
     desc.includes("fog") ||
@@ -80,7 +69,6 @@ function getWeatherCategory(weatherDescription, temperature) {
     return "mist";
   }
 
-  // Verificar nubes
   if (
     desc.includes("nube") ||
     desc.includes("cloud") ||
@@ -89,11 +77,9 @@ function getWeatherCategory(weatherDescription, temperature) {
     return "clouds";
   }
 
-  // Por defecto, cielo despejado
   return "clear";
 }
 
-// Obtener consejos basados en el clima actual
 export function getAdviceForWeather(weatherData) {
   if (!weatherAdviceData || !weatherData) return null;
 
@@ -101,7 +87,6 @@ export function getAdviceForWeather(weatherData) {
   const temperature = weatherData.main.temp;
 
   const category = getWeatherCategory(description, temperature);
-  console.log(`Categoría de clima detectada: ${category}`);
 
   const categoryData = weatherAdviceData.weatherAdvice[category];
   if (!categoryData) {
@@ -115,7 +100,6 @@ export function getAdviceForWeather(weatherData) {
   };
 }
 
-// Actualizar el modal con los consejos
 export function updateAdviceModal(weatherData) {
   if (!weatherData) return;
 
@@ -128,21 +112,17 @@ export function updateAdviceModal(weatherData) {
   const modalContent = document.querySelector("#myModal .space-y-4");
   if (!modalContent) return;
 
-  // Mantener el primer div (información de ubicación y temperatura)
   const locationInfo = modalContent.querySelector(".bg-white\\/10");
 
-  // Limpiar el contenido existente excepto la info de ubicación
   modalContent.innerHTML = "";
   if (locationInfo) {
     modalContent.appendChild(locationInfo);
   }
 
-  // Crear las secciones de consejos
   adviceData.advice.forEach((adviceItem) => {
     const adviceSection = document.createElement("div");
     adviceSection.className = "space-y-2";
 
-    // Determinar el color del icono basado en la prioridad
     let iconColor = "text-blue-300";
     if (adviceItem.priority === "high") {
       iconColor = "text-red-400";
@@ -165,6 +145,4 @@ export function updateAdviceModal(weatherData) {
 
     modalContent.appendChild(adviceSection);
   });
-
-  console.log("Modal de consejos actualizado con éxito");
 }

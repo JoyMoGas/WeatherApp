@@ -5,25 +5,179 @@ const inputElement = document.getElementById("citySearch");
 
 inputElement.addEventListener("keypress", async (e) => {
   if (e.key === "Enter") {
-    const cityName = inputElement.value.trim();
-
-    if (cityName) {
-      console.log("Buscando clima para:", cityName);
-      const weatherData = await getWeatherByCity(cityName);
-      const forecastData = await getForecastByCity(cityName);
-
-      if (weatherData) {
-        updateWeatherUI(weatherData);
-      } else {
-        console.log("No se encontró la ciudad");
-      }
-
-      if (forecastData) {
-        updateForecastUI(forecastData);
-      }
-    }
+    handleSearch();
   }
 });
+
+inputElement.addEventListener("input", function () {
+  const value = this.value.toLowerCase();
+  const history = loadCityHistory();
+
+  if (value.trim() === "") {
+    hideSuggestions();
+    return;
+  }
+
+  const filtered = history.filter((city) => city.toLowerCase().includes(value));
+  showSuggestions(filtered);
+});
+
+inputElement.addEventListener("focus", function () {
+  const value = this.value.trim();
+  const history = loadCityHistory();
+
+  if (value === "") {
+    showSuggestions(history);
+  } else {
+    const filtered = history.filter((city) =>
+      city.toLowerCase().includes(value.toLowerCase()),
+    );
+    showSuggestions(filtered);
+  }
+});
+
+document.addEventListener("click", function (e) {
+  if (
+    e.target !== inputElement &&
+    e.target.closest("#searchSuggestions") === null
+  ) {
+    hideSuggestions();
+  }
+});
+
+async function handleSearch(cityNameOverride) {
+  const cityName = cityNameOverride || inputElement.value.trim();
+
+  if (cityName) {
+    hideSuggestions();
+
+    inputElement.value = cityName;
+
+    const weatherData = await getWeatherByCity(cityName, (status, data) => {
+      if (status === "retry") {
+        showNotification(
+          `Conexión inestable. Reintentando... (${data.attempt}/${data.max})`,
+          "warning",
+        );
+      } else if (status === "circuit_open") {
+        showNotification(
+          "Servicio temporalmente no disponible. Intente más tarde.",
+          "error",
+        );
+      } else if (status === "success") {
+      }
+    });
+
+    const forecastData = await getForecastByCity(cityName);
+
+    if (weatherData) {
+      updateWeatherUI(weatherData);
+      saveCityToHistory(weatherData.name);
+    } else {
+    }
+
+    if (forecastData) {
+      updateForecastUI(forecastData);
+    }
+  }
+}
+
+function showNotification(message, type = "info") {
+  const container = document.getElementById("notificationContainer");
+  if (!container) return;
+
+  const notification = document.createElement("div");
+  let bgClass = "bg-blue-500/90";
+  let iconClass = "fa-circle-info";
+
+  if (type === "warning") {
+    bgClass = "bg-yellow-500/90";
+    iconClass = "fa-triangle-exclamation";
+  } else if (type === "error") {
+    bgClass = "bg-red-500/90";
+    iconClass = "fa-circle-xmark";
+  } else if (type === "success") {
+    bgClass = "bg-green-500/90";
+    iconClass = "fa-check-circle";
+  }
+
+  notification.className = `${bgClass} backdrop-blur-md text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 transform transition-all duration-300 translate-y-[-20px] opacity-0 pointer-events-auto`;
+  notification.innerHTML = `
+    <i class="fa-solid ${iconClass}"></i>
+    <span class="font-medium text-sm">${message}</span>
+  `;
+
+  container.appendChild(notification);
+
+  requestAnimationFrame(() => {
+    notification.classList.remove("translate-y-[-20px]", "opacity-0");
+  });
+
+  setTimeout(() => {
+    notification.classList.add("translate-y-[-20px]", "opacity-0");
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 4000);
+}
+
+function loadCityHistory() {
+  const history = localStorage.getItem("weatherCityHistory");
+  return history ? JSON.parse(history) : [];
+}
+
+function saveCityToHistory(city) {
+  let history = loadCityHistory();
+
+  history = history.filter((c) => c.toLowerCase() !== city.toLowerCase());
+
+  history.unshift(city);
+
+  if (history.length > 10) {
+    history = history.slice(0, 10);
+  }
+
+  localStorage.setItem("weatherCityHistory", JSON.stringify(history));
+}
+
+function showSuggestions(suggestions) {
+  const suggestionsList = document.getElementById("searchSuggestions");
+  if (!suggestionsList) return;
+
+  if (suggestions.length === 0) {
+    suggestionsList.classList.add("hidden");
+    return;
+  }
+
+  suggestionsList.innerHTML = suggestions
+    .map(
+      (city) => `
+    <li class="px-4 py-2 hover:bg-white/10 cursor-pointer text-white transition-colors border-b border-white/10 last:border-0 flex items-center gap-2">
+      <i class="fa-solid fa-clock-rotate-left text-xs opacity-70"></i>
+      <span>${city}</span>
+    </li>
+  `,
+    )
+    .join("");
+
+  suggestionsList.classList.remove("hidden");
+
+  Array.from(suggestionsList.children).forEach((li) => {
+    li.addEventListener("click", function () {
+      const city = this.querySelector("span").textContent;
+      handleSearch(city);
+    });
+  });
+}
+
+function hideSuggestions() {
+  const suggestionsList = document.getElementById("searchSuggestions");
+  if (suggestionsList) {
+    setTimeout(() => {
+      suggestionsList.classList.add("hidden");
+    }, 200);
+  }
+}
 
 const currentDate = new Date();
 const formattedDate = currentDate.toLocaleDateString("es", {
@@ -117,7 +271,6 @@ function updateForecastUI(forecastData) {
   const forecast = processForecastData(forecastData);
 
   if (forecast.length === 0) {
-    console.log("No hay datos de pronóstico disponibles");
     return;
   }
 
@@ -147,15 +300,12 @@ function updateForecastUI(forecastData) {
     )
     .join("");
 
-  // Actualizar ambos contenedores (desktop y mobile)
   if (forecastContainerDesktop) {
     forecastContainerDesktop.innerHTML = forecastHTML;
   }
   if (forecastContainerMobile) {
     forecastContainerMobile.innerHTML = forecastHTML;
   }
-
-  console.log("Pronóstico de 5 días actualizado");
 }
 
 function updateWeatherUI(weatherData) {
@@ -195,7 +345,7 @@ function updateWeatherUI(weatherData) {
     tempAdviceElement.textContent = `${description} - ${Math.round(weatherData.main.temp)}°C`;
   }
 
-  const windElement = document.getElementById("windS").querySelector("p");
+  const windElement = document.getElementById("windSpeed");
   if (windElement) {
     windElement.textContent = `Viento ${Math.round(weatherData.wind.speed)} km/h`;
   }
@@ -203,6 +353,25 @@ function updateWeatherUI(weatherData) {
   const humidityElement = document.getElementById("humidityValue");
   if (humidityElement) {
     humidityElement.textContent = `${weatherData.main.humidity}%`;
+  }
+
+  const sunriseElement = document.getElementById("sunriseTime");
+  const sunsetElement = document.getElementById("sunsetTime");
+
+  if (sunriseElement && weatherData.sys.sunrise) {
+    const sunriseDate = new Date(weatherData.sys.sunrise * 1000);
+    sunriseElement.textContent = sunriseDate.toLocaleTimeString("es-MX", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  if (sunsetElement && weatherData.sys.sunset) {
+    const sunsetDate = new Date(weatherData.sys.sunset * 1000);
+    sunsetElement.textContent = sunsetDate.toLocaleTimeString("es-MX", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   const maxElement = document.getElementById("maxT");
@@ -217,17 +386,9 @@ function updateWeatherUI(weatherData) {
 
   const dewPointElement = document.getElementById("dewPoint");
   if (dewPointElement) {
-    console.log("feels_like original:", weatherData.main.feels_like);
-    console.log(
-      "feels_like redondeado:",
-      Math.round(weatherData.main.feels_like),
-    );
     dewPointElement.textContent = `${Math.round(weatherData.main.feels_like)}°C`;
   }
 
-  console.log("UI actualizada con datos del clima");
-
-  // Actualizar el modal de consejos
   updateAdviceModal(weatherData);
 }
 
@@ -240,15 +401,12 @@ async function getWeatherByCoords(lat, lon) {
     const response = await fetch(url);
 
     if (!response.ok) {
-      console.error(`Error HTTP: ${response.status}`);
       return null;
     }
 
     const data = await response.json();
-    console.log("Datos del clima obtenidos por coordenadas:", data);
     return data;
   } catch (error) {
-    console.error("Error al obtener clima por coordenadas:", error);
     return null;
   }
 }
@@ -263,15 +421,12 @@ async function getForecastByCoords(lat, lon) {
     const response = await fetch(url);
 
     if (!response.ok) {
-      console.error(`Error HTTP: ${response.status}`);
       return null;
     }
 
     const data = await response.json();
-    console.log("Datos del pronóstico obtenidos por coordenadas:", data);
     return data;
   } catch (error) {
-    console.error("Error al obtener pronóstico por coordenadas:", error);
     return null;
   }
 }
@@ -287,7 +442,6 @@ async function getLocation() {
           });
         },
         (error) => {
-          console.error("Error al obtener ubicación:", error);
           reject(error);
         },
       );
@@ -299,11 +453,9 @@ async function getLocation() {
 
 async function loadWeatherByLocation() {
   try {
-    console.log("Obteniendo ubicación del usuario...");
     const location = await getLocation();
 
     if (location) {
-      console.log("Ubicación obtenida:", location);
       const weatherData = await getWeatherByCoords(
         location.latitude,
         location.longitude,
@@ -322,18 +474,12 @@ async function loadWeatherByLocation() {
       }
     }
   } catch (error) {
-    console.log(
-      "No se pudo obtener la ubicación automáticamente:",
-      error.message,
-    );
-
     const defaultCity = "Hermosillo";
     const weatherData = await getWeatherByCity(defaultCity);
     const forecastData = await getForecastByCity(defaultCity);
 
     if (weatherData) {
       updateWeatherUI(weatherData);
-      console.log(`Datos cargados para ciudad por defecto: ${defaultCity}`);
     }
 
     if (forecastData) {
@@ -342,8 +488,6 @@ async function loadWeatherByLocation() {
   }
 }
 
-// Cargar consejos meteorológicos
 loadWeatherAdvice();
 
-// Cargar clima inicial
 loadWeatherByLocation();
